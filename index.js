@@ -7,19 +7,63 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      name: "React"
+      todoItems: [],
+      message: ""
     };
   }
 
+  addItem(e) {
+    e.preventDefault();
+    const { todoItems } = this.state;
+    const newValue = this.newItem.value;
+    const isOnTheList = todoItems.includes(newValue);
+    if (isOnTheList) {
+      this.setState({
+        message: "This item is already on the list."
+      });
+    } else {
+      newValue !== "" &&
+        this.setState({
+          todoItems: [...this.state.todoItems, newValue],
+          message: ""
+        });
+    }
+    this.addForm.reset();
+  }
+
+  removeItem(item) {
+    const newItems = this.state.todoItems.filter(toDoItem => {
+      return toDoItem !== item;
+    });
+    this.setState({
+      todoItems: [...newItems]
+    });
+
+    if (newItems.length === 0) {
+      this.setState({
+        message: "No items on your list, add some."
+      });
+    }
+  }
+
   render() {
+    const { todoItems, message } = this.state;
     return (
       <div>
         <header>
           <h1>To Do List</h1>
-          <form className="form-inline">
+          <form
+            ref={input => (this.addForm = input)}
+            className="form-inline"
+            onSubmit={e => {
+              this.addItem(e);
+            }}
+          >
             <div class="input-group">
               <input
+                ref={input => (this.newItem = input)}
                 type="text"
+                id="newItem"
                 class="form-control"
                 placeholder="Add Item"
                 aria-label="Add todoItem"
@@ -35,36 +79,38 @@ class App extends Component {
         </header>
 
         <div className="content">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-              </tr>
-              <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-              </tr>
-              <tr>
-                <th scope="row">3</th>
-                <td>Larry</td>
-                <td>the Bird</td>
-                <td>@twitter</td>
-              </tr>
-            </tbody>
-          </table>
+          {(message !== "" || todoItems.length === 0) && (
+            <p className="message text-danger">{message}</p>
+          )}
+          {todoItems.length > 0 && (
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Items</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todoItems.map(item => {
+                  return (
+                    <tr key={item}>
+                      <td>{item}</td>
+                      <td className="text-right">
+                        <button
+                          onClick={e => {
+                            this.removeItem(item);
+                          }}
+                          type="button"
+                          className="btn btn-default btn-sm"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     );
